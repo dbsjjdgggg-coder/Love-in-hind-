@@ -3,45 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> دودي ي دودي </title>
+    <title>مفاجأة ✨</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #05020a;
             color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: sans-serif;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
         }
-
-        /* زر الفتح الانيق */
         .show-btn {
             background: linear-gradient(135deg, #ff0055, #990033);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 18px 42px;
+            color: white;
+            border: none;
+            padding: 18px 40px;
             font-size: 1.3rem;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 0 30px rgba(255, 0, 85, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.3);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
             z-index: 10;
         }
-
-        .show-btn:hover {
-            transform: translateY(-4px) scale(1.08);
-            box-shadow: 0 0 45px rgba(255, 0, 85, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.5);
+        #canvas-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
 
-        /* حاوية الكانف
-        
+    <button id="mainBtn" class="show-btn" onclick="startDrawing()">اضغط هنا لرؤية المفاجأة ✨</button>
+
+    <div id="canvas-container">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <script>
+        function startDrawing() {
+            document.getElementById('mainBtn').style.display = 'none';
+            const container = document.getElementById('canvas-container');
+            container.style.display = 'block';
+
+            const canvas = document.getElementById('myCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const w = canvas.width = window.innerWidth;
+            const h = canvas.height = window.innerHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // تحديد مقياس الرسم حسب حجم الشاشة
+            const scaleFactor = Math.min(w, h) / 700;
+
+            ctx.fillStyle = '#05020a';
+            ctx.fillRect(0, 0, w, h);
+
+            function heart(a, sc) {
+                const x = 16 * Math.pow(Math.sin(a), 3) * sc * scaleFactor;
+                const y = -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * sc * scaleFactor;
+                return { x: x, y: y };
+            }
+
+            function drawRose(x, y, color) {
+                const r = 12 * scaleFactor;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.max(r, 6), 0, Math.PI * 2);
+                ctx.fillStyle = color === 'red' ? '#ff0044' : '#ffffff';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(x, y, Math.max(r * 0.4, 2), 0, Math.PI * 2);
+                ctx.fillStyle = color === 'red' ? '#800020' : '#cccccc';
+                ctx.fill();
+            }
+
+            let count = 0;
+            function draw() {
+                for (let b = 0; b < 200; b++) {
+                    if (count > 8000) break;
+                    const a = Math.random() * 2 * Math.PI;
+                    const sc = count < 6000 ? (0.5 + Math.random() * 14.5) : 15;
+                    const p = heart(a, sc);
+
+                    const ang = Math.atan2(-p.y, p.x) + (Math.random() - 0.5);
+                    const len = (4 + Math.random() * 10) * scaleFactor;
+
+                    const greenVal = Math.floor(Math.random() * 80 + 40);
+                    const blueVal = Math.floor(Math.random() * 100 + 140);
+                    ctx.strokeStyle = `rgb(255, ${greenVal}, ${blueVal})`;
+                    ctx.lineWidth = 1;
+
+                    ctx.beginPath();
+                    ctx.moveTo(cx + p.x, cy + p.y);
+                    ctx.lineTo(cx + p.x + len * Math.cos(ang), cy + p.y - len * Math.sin(ang));
+                    ctx.stroke();
+
+                    count++;
+                }
+
+                if (count < 8000) {
+                    requestAnimationFrame(draw);
+                } else {
+                    // رسم الورود الحمراء والبيضاء حول القلب
+                    for (let k = 0; k < 24; k++) {
+                        const t = (k / 24) * Math.PI * 2;
+                        const pos = heart(t, 17.5);
+                        drawRose(cx + pos.x, cy + pos.y, k % 2 === 0 ? 'red' : 'white');
+                    }
+                }
+            }
+
+            draw();
+        }
+    </script>
+</body>
+</html>
