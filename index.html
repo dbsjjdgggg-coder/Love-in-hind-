@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For You ✨</title>
-    <!-- استدعاء خط أجنبي كلاسيكي وجميل للعبارات -->
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #000000;
             color: #ffffff;
-            font-family: 'Poppins', sans-serif;
+            font-family: sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -30,7 +29,6 @@
             box-shadow: 0 0 25px rgba(225, 29, 72, 0.4);
             transition: all 0.3s ease;
             z-index: 10;
-            letter-spacing: 1px;
         }
         .show-btn:hover {
             transform: scale(1.05);
@@ -51,5 +49,102 @@
 
     <button id="mainBtn" class="show-btn" onclick="startDrawing()">Open Surprise ✨</button>
 
-    <div id="canvas-
-        
+    <div id="canvas-container">
+        <canvas id="myCanvas"></canvas>
+    </div>
+
+    <script>
+        function startDrawing() {
+            document.getElementById('mainBtn').style.display = 'none';
+            document.getElementById('canvas-container').style.display = 'block';
+
+            const canvas = document.getElementById('myCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const w = canvas.width = window.innerWidth;
+            const h = canvas.height = window.innerHeight;
+            const cx = w / 2;
+            const cy = h / 2 - 40;
+
+            const scaleFactor = Math.min(w, h) / 750;
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, w, h);
+
+            function heart(a, sc) {
+                const x = 16 * Math.pow(Math.sin(a), 3) * sc * scaleFactor;
+                const y = -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * sc * scaleFactor;
+                return { x: x, y: y };
+            }
+
+            let count = 0;
+            const totalStage1 = 8000;
+            const totalStage2 = 2500;
+            const totalPoints = totalStage1 + totalStage2;
+
+            function draw() {
+                // عدد النقاط في كل إطار لجعل الحركة بطيئة وناعمة
+                let batchSize = 35; 
+
+                for (let b = 0; b < batchSize; b++) {
+                    if (count >= totalPoints) break;
+
+                    let a, sc, pos;
+                    if (count < totalStage1) {
+                        a = Math.random() * 2 * Math.PI;
+                        sc = 0.5 + Math.random() * 15.0;
+                        pos = heart(a, sc);
+                    } else {
+                        a = Math.random() * 2 * Math.PI;
+                        sc = 16.0;
+                        pos = heart(a, sc);
+                    }
+
+                    const ang = Math.atan2(-pos.y, pos.x) + (Math.random() * 1.0 - 0.5);
+                    const len = (4 + Math.random() * 10) * scaleFactor;
+
+                    const r = 255;
+                    const g = Math.floor((0.25 + Math.random() * 0.35) * 255);
+                    const bVal = Math.floor((0.65 + Math.random() * 0.25) * 255);
+
+                    ctx.strokeStyle = `rgb(${r}, ${g}, ${bVal})`;
+                    ctx.lineWidth = 0.7;
+
+                    const startX = cx + pos.x;
+                    const startY = cy + pos.y;
+                    const endX = startX + len * Math.cos(ang);
+                    const endY = startY - len * Math.sin(ang);
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+
+                    count++;
+                }
+
+                if (count < totalPoints) {
+                    requestAnimationFrame(draw);
+                } else {
+                    // كتابة النصوص مباشرة بعد اكتمال الرسم بدون تعليق
+                    ctx.font = `400 ${Math.max(26, Math.floor(40 * scaleFactor))}px 'Great Vibes', cursive`;
+                    ctx.fillStyle = '#ffe6f0';
+                    ctx.textAlign = 'center';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ff3264';
+                    ctx.fillText("thanks to be in my life", cx, cy + 240 * scaleFactor);
+
+                    ctx.font = `400 ${Math.max(20, Math.floor(28 * scaleFactor))}px 'Great Vibes', cursive`;
+                    ctx.fillStyle = '#ffb3d1';
+                    ctx.textAlign = 'right';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#ff3264';
+                    ctx.fillText("From M", w - 30, h - 30);
+                }
+            }
+
+            draw();
+        }
+    </script>
+</body>
+</html>
