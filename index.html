@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مفاجأة لك ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* تنسيق زر المفاجأة */
+        .show-btn {
+            background: linear-gradient(135deg, #e11d48, #f43f5e);
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.5);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .show-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(225, 29, 72, 0.7);
+        }
+
+        /* منطقة الرسمة Canvas */
+        #canvas-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- زر الفتح -->
+    <button id="mainBtn" class="show-btn" onclick="startDrawing()">اضغط هنا لرؤية المفاجأة ✨</button>
+
+    <!-- مكان الرسمة -->
+    <div id="canvas-container">
+        <canvas id="heartCanvas"></canvas>
+    </div>
+
+    <script>
+        function startDrawing() {
+            // إخفاء الزر وإظهار مكان الرسم
+            document.getElementById('mainBtn').style.display = 'none';
+            const container = document.getElementById('canvas-container');
+            container.style.display = 'block';
+
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // ضبط حجم الشاشة
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, width, height);
+
+            // نقطة المنتصف
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // معادلة القلب من كود بايثون
+            function heart(a, scale) {
+                const x = 16 * Math.pow(Math.sin(a), 3) * scale;
+                const y = (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * scale;
+                return { x: x, y: -y }; // عُكست الإشارة لأن y في الكانفاس لأسفل
+            }
+
+            // المرحلة الأولى: 10,000 نقطة/خط
+            let i = 0;
+            const totalStage1 = 10000;
+            const totalStage2 = 3500;
+
+            function drawStage1() {
+                let batch = 0;
+                while (batch < 80 && i < totalStage1) {
+                    const a = Math.random() * 2 * Math.PI;
+                    const sc = 0.5 + Math.random() * 15.0; // uniform(0.5, 15.5)
+                    const pos = heart(a, sc);
+
+                    const ang = Math.atan2(-pos.y, pos.x) + (Math.random() * 1 - 0.5);
+                    const length = 4 + Math.random() * 10;
+
+                    // تحويل ألوان Python RGB (1.0, rand, rand) إلى CSS
+                    const r = 255;
+                    const g = Math.floor((0.25 + Math.random() * 0.3) * 255);
+                    const b = Math.floor((0.65 + Math.random() * 0.2) * 255);
+                    const lineWidth = 0.5 + Math.random() * 0.7;
+
+                    ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.lineWidth = lineWidth;
+
+                    const startX = centerX + pos.x;
+                    const startY = centerY + pos.y;
+                    const endX = startX + length * Math.cos(ang);
+                    const endY = startY - length * Math.sin(ang);
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+
+                    i++;
+                    batch++;
+                }
+
+                if (i < totalStage1) {
+                    requestAnimationFrame(drawStage1);
+                } else {
+                    i = 0;
+                    requestAnimationFrame(drawStage2);
+                }
+            }
+
+            // المرحلة الثانية: 3,500 نقطة/خط الحواف الخارجية
+            function drawStage2() {
+                let batch = 0;
+                while (batch < 40 && i < totalStage2) {
+                    const a = Math.random() * 2 * Math.PI;
+                    const pos = heart(a, 16.0);
+
+                    const ang = Math.atan2(-pos.y, pos.x) + (Math.random() * 0.7 - 0.35);
+                    const length = 10 + Math.random() * 22;
+
+                    const r = 255;
+                    const g = Math.floor((0.45 + Math.random() * 0.3) * 255);
+                    const b = Math.floor((0.75 + Math.random() * 0.2) * 255);
+                    const lineWidth = 0.4 + Math.random() * 0.5;
+
+                    ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.lineWidth = lineWidth;
+
+                    const offsetX = (Math.random() * 4 - 2);
+                    const offsetY = (Math.random() * 4 - 2);
+
+                    const startX = centerX + pos.x + offsetX;
+                    const startY = centerY + pos.y + offsetY;
+                    const endX = startX + length * Math.cos(ang);
+                    const endY = startY - length * Math.sin(ang);
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+
+                    i++;
+                    batch++;
+                }
+
+                if (i < totalStage2) {
+                    requestAnimationFrame(drawStage2);
+                }
+            }
+
+            // بدء الرسم
+            drawStage1();
+        }
+    </script>
+</body>
+</html>
